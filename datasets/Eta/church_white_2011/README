@@ -1,0 +1,21 @@
+Data of mean sea level for comparison in Green's Function Approach
+
+gslr_EPA_inches.txt:
+- 1993 - 2015
+- in inches 
+-downloaded from: https://www.epa.gov/climate-indicators/climate-change-indicators-sea-level
+
+slr_sla_gbl_free_txj1j2_90.nc:
+-1993-2016
+-im mm
+satellite data from topex, jason-1, jason-2
+downloaded from: https://www.star.nesdis.noaa.gov/sod/lsa/SeaLevelRise/LSA_SLR_timeseries_global.php
+
+church_white_gmsl_2011_up:
+- satellite data 1993 - 2013 (monthly and yearly)
+- reconstructed from gauge and satellites 1880 - 2013 (monthly and yearly)
+- in mm
+- mean values and uncertainty
+- downloaded from: https://www.cmar.csiro.au/sealevel/sl_data_cmar.html
+
+

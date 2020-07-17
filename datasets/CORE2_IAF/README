@@ -1,0 +1,8 @@
+This folder contains:
+- CORE II IAF runoff forcing prepared to use in MITgcm downloaded from http://data1.gfdl.noaa.gov/~nnz/mom4/COREv2/data_IAF/CORRECTED/
+- increased_runoff_arctic: runoff increased by 30% between 60 - 90 N
+
+Scripts:
+- loop_for_interpolating_to_MITgcm_llc_grid.sh: loop over years to interpolate/move runoff to llc grid
+- move_runoff_to_MITgcm_llc_grid_points.py: move runoff on regular grid to nearest point on MITgcm llc grid
+- move_points_to_ocean.py: move runoff lying on land to nearest ocean point
