@@ -1,0 +1,61 @@
+# Readme for processing of ERA-Interim data
+# in order to use them as MITgcm external forcing data
+
+# March 20, 2017
+# Elena Gerwing
+
+###################################################################################################
+Data downloaded from: http://apps.ecmwf.int/datasets/data/interim-full-daily/levtype=sfc/
+
+Downloaded data with following options:
+
+- instantaneous fields
+        * parameters: 2 metre dew point temperature (d2m), 2 metre temperature (t2m), 10 metre U wind component (u10), 10 metre V wind component (v10), Surface pressure (sp)
+        * times: 00:00, 06:00, 12:00 18:00
+        * steps: 0
+
+- accumulated fields
+        * parameters: surface solar radiation downwards (ssrd), surface thermal radiation downwards (strd), total precipitation (tp)
+        * times: 00:00, 12:00
+        * steps: 6, 12
+
+Original (downloaded) files are called: ERAi_instantaneous_6hourly_YEAR.nc or ERAi_accumulated_6hourly_YEAR.nc
+
+Eventually need to split by year if multiple years were downloaded together:
+cdo splityear ERAi_instantaneous_6hourly_YEARS.nc ERA_instantaneous_6hourly_
+
+Merge instantaneous and accumulated fields:
+cdo merge ERAi_instantaneous_6hourly_YEAR.nc ERAi_accumulated_6hourly_YEAR.nc ERA_params_YEAR.nc
+
+###################################################################################################
+
+############ THIS FOLDER CONTAINS: ################################################################
+
+- prepared atmospheric forcing data to use in MITgcm
+
+- main_loop.sh: loop over specified years, which calls *specHum_from_T_and_P.py* and *prepare_forcing_for_MITgcm.py*
+
+- specHum_from_T_and_P.py: specHum_from_T_and_P.py calculates the specific humidity from the dew-point temperature and the surface pressure and includes the calculated variables into the NetCDF file. Start *specHum_from_T_and_P.py* directly or from main_loop.sh.
+    usage: python specHum_from_T_and_P.py ERA_params_YEAR.nc
+
+- prepare_forcing_for_MITgcm.py: Converts the NetCDF file to a binary file and flips the filed in y direction. Eventually converts the units of long- and shortwave radiation strd and ssrd from J/m^2 to W/m^2 and the precipitation from m to m/s.  Start from command line or main_loop.sh.
+    usage: python prepare_forcing_for_MITgcm.py ERA_params_YEAR.nc '_ERAi_6hourly_YEAR' --convert --flip_y
+
+- correct_precipitation.py: Correct precipitation forcing in order to reduce bias between modeled sea surface elevation and observations. Start from command line or main_loop.sh.
+    usage: python correct_precipitation.py ERA_params_YEAR.nc 'tp_corrected_ERAi_6hourly_YEAR' --convert --flip_y
+
+
+- folder *arctic_increase*: forcing data with increased temperatures over the arctic.
+    Scripts to increase the temperature forcing.
+
+- there is a bug in the 2016 wind fields (very high winds in time
+record 603), and I replaced record 603 by record 602 (following
+Claudia Wekerle's suggestion)
+
+- extended forcing to Aug-31, 2019 (end of ERAinterim) with the help of
+Claudia.Wekerle@awi.de, scripts: nc2bin.py, nc2bin_fluxes.py,
+nc2bin_raw.py convert netcdf files in /work/ollie/clidyn/forcing/erai,
+/work/ollie/clidyn/forcing/erai/raw, /work/ollie/cwekerly/erai/6_12 to
+MITgcm binary ieee-be files
+
+-note: tp_corrected are only valid for llc90 runs!
