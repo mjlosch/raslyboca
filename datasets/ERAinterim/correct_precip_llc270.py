@@ -114,6 +114,14 @@ def writefield(fname,data):
         data.astype('>f4').tofile(fid)
         fid.close()
 
+# erai grid
+lat = np.linspace(-90.,90.,241)
+lat[0],lat[-1]=lat[1],lat[-2]
+dlat = 0.75*np.pi/180.*np.cos(lat*np.pi/180.)
+dlon = 0.75*np.pi/180.*np.ones(480,)
+dx,dy=np.meshgrid(dlon,dlat)
+rac=dx*dy
+
 for k, year in enumerate(years):
 #for k, year in enumerate(range(1979,1981)):
     # load data
@@ -121,5 +129,21 @@ for k, year in enumerate(years):
     if cal.isleap(year): kt = 1464
     if year==2019: kt = 976
     fld = readfield('tp_ERAi_6hourly_'+str(year),[kt,241,480])
-    writefield('tp_ERAi_corr_llc270_6hourly_'+str(year),
-               fld+yearly_precip_corr[k])
+    fldc = fld + yearly_precip_corr[k]
+    if yearly_precip_corr[k] < 0.:
+        # correct for negative precip:
+        ract=np.tile(rac.reshape((1,rac.shape[0],rac.shape[1])),(kt,1,1))
+        ntot = len(fldc.ravel())
+        # 1. find all negative entries
+        ineg = fldc<0
+        nneg = ract[ineg].sum()
+        sumneg = np.sum((fldc*ract)[ineg])
+        # 2. find all entries at least 3 times larger then
+        #    the mean of all negative entries and add the mean of the negatives
+        ipos = fldc > -3*sumneg/nneg
+        npos = ract[ipos].sum()
+        fldc[fldc<=0] = 0.
+        fldc = np.where(ipos,fldc + sumneg/npos ,fldc)
+
+
+    writefield('tp_ERAi_corr_llc270_6hourly_'+str(year),fldc)
