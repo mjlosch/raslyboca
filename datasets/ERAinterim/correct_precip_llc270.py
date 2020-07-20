@@ -11,9 +11,12 @@ import pickle
 
 rhoFresh = 1000.
 # estimate of yearly imbalance of uncorrected model
-fname = '/work/ollie/mlosch/raslyboca/llc270/spinup_era_interim/yearly_correction'
-fname1 = '/work/ollie/mlosch/raslyboca/datasets/Eta/sea_surface_elevation.nc'
-fname2 = '/work/ollie/mlosch/raslyboca/datasets/Eta/dangendorf-etal2019_ncc.txt'
+d1 = '/work/ollie/mlosch/raslyboca/llc270/spinup_era_interim'
+d2 = '/work/ollie/mlosch/raslyboca/datasets/Eta'
+#d1 = '/Users/mlosch/Downloads/Eta'; d2 = d1
+fname = os.path.join(d1,'yearly_correction')
+fname1 = os.path.join(d2,'sea_surface_elevation.nc')
+fname2 = os.path.join(d2,'dangendorf-etal2019_ncc.txt')
 with open(fname, 'rb') as fp:
     gmyearly_saved = pickle.load(fp)
 
