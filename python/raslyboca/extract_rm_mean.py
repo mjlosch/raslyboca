@@ -136,33 +136,34 @@ ax.grid()
 ax.legend()
 fig.show()
 
-# compute yearly correction from gm ([gm]=kg/m^2/s)
-years=range(xdays[0].year,xdays[-1].year+1)
-gmyearly=[]
-for y in years:
-    gmyearly.append(0.)
-    kyear = 0
-    for k, day in enumerate(xdays):
-        if day.year == y:
-            kyear = kyear+1
-            gmyearly[-1]=gmyearly[-1]+gm[k]
+if len(gm)>0:
+    # compute yearly correction from gm ([gm]=kg/m^2/s)
+    years=range(xdays[0].year,xdays[-1].year+1)
+    gmyearly=[]
+    for y in years:
+        gmyearly.append(0.)
+        kyear = 0
+        for k, day in enumerate(xdays):
+            if day.year == y:
+                kyear = kyear+1
+                gmyearly[-1]=gmyearly[-1]+gm[k]
 
-    if kyear>0: gmyearly[-1]=gmyearly[-1]/kyear
+        if kyear>0: gmyearly[-1]=gmyearly[-1]/kyear
 
-figb, axb = plt.subplots(1,1)
-axb.bar(years,np.asarray(gmyearly)*1e6)
-axb.grid()
-axb.set_title('annual correction (mg m$^{-2}$s$^{-1}$ $\Leftrightarrow$ 10$^{-9}$ m s$^{-1}$))')
-figb.show()
+    figb, axb = plt.subplots(1,1)
+    axb.bar(years,np.asarray(gmyearly)*1e6)
+    axb.grid()
+    axb.set_title('annual correction (mg m$^{-2}$s$^{-1}$ $\Leftrightarrow$ 10$^{-9}$ m s$^{-1}$))')
+    figb.show()
 
-fname = 'yearly_correction'
-with open(fname+'.txt', 'w') as f:
-    for item in gmyearly:
-        f.write("%s\n" % item)
+    fname = 'yearly_correction'
+    with open(fname+'.txt', 'w') as f:
+        for item in gmyearly:
+            f.write("%s\n" % item)
 
-import pickle
-with open(fname, 'wb') as fp:
-    pickle.dump([years,gmyearly], fp)
+    import pickle
+    with open(fname, 'wb') as fp:
+        pickle.dump([years,gmyearly], fp)
 
-with open(fname, 'rb') as fp:
-    gmyearly_saved = pickle.load(fp)
+    with open(fname, 'rb') as fp:
+        gmyearly_saved = pickle.load(fp)
