@@ -52,7 +52,7 @@ def get_parms (fname):
                 rhoIce = float(ll[-1].replace('E','e'))
 
 
-    return rhoFresh, rhoIce/rhoConst, deltaT, startDate
+    return rhoFresh, rhoIce, rhoConst, deltaT, startDate
 
 def get_output (fnames, mystring):
     """parse fname and get some numbers out"""
@@ -95,7 +95,7 @@ def get_diagst(fnames):
         diags = rdmnc(fname)
         timev = np.append(timev,diags['T'][:])
         etav  = np.append(etav, diags['ETAN_ave'][:,0,0])
-        heffv = np.append(heffv,rhoIce*diags['SIheff_ave'][:,0,0])
+        heffv = np.append(heffv,diags['SIheff_ave'][:,0,0])
 
     # reverse order
     timevs=np.asarray(timev[::-1])
@@ -112,7 +112,7 @@ def get_diagst(fnames):
 # done
 
 timesec, gm = get_output(files,'rm Global mean of SIatmFW')
-rhoFresh, rhoIce, deltaT, startdate = get_parms(files[0])
+rhoFresh, rhoIce, rhoConst, deltaT, startdate = get_parms(files[0])
 #
 timediags, eta, hff = get_diagst(diagfiles)
 
@@ -127,10 +127,11 @@ fig, ax = plt.subplots(1,1)
 # variable SIatmFW is positive upwards, leading sea level decrease, hence the sign
 ax.plot(xdays,-np.cumsum(gm)*deltaT/rhoFresh,label='- cumsum(global mean SIatmFW)')
 
-hff = rhoIce*hff
-ax.plot(ddays,eta,label='ETAN_ave')
-ax.plot(ddays,hff,label='SIheff_ave')
-ax.plot(ddays,eta+hff,label='sum')
+rcf = rhoConst/rhoFresh
+rif = rhoIce/rhoFresh
+ax.plot(ddays,rcf*eta,label='ETAN_ave')
+ax.plot(ddays,rif*hff,label='SIheff_ave')
+ax.plot(ddays,rcf*eta+rif*hff,label='sum')
 
 ax.grid()
 ax.legend()
@@ -156,14 +157,14 @@ if len(gm)>0:
     axb.set_title('annual correction (mg m$^{-2}$s$^{-1}$ $\Leftrightarrow$ 10$^{-9}$ m s$^{-1}$))')
     figb.show()
 
-    fname = 'yearly_correction'
-    with open(fname+'.txt', 'w') as f:
-        for item in gmyearly:
-            f.write("%s\n" % item)
+    # fname = 'yearly_correction'
+    # with open(fname+'.txt', 'w') as f:
+    #     for item in gmyearly:
+    #         f.write("%s\n" % item)
 
-    import pickle
-    with open(fname, 'wb') as fp:
-        pickle.dump([years,gmyearly], fp)
+    # import pickle
+    # with open(fname, 'wb') as fp:
+    #     pickle.dump([years,gmyearly], fp)
 
-    with open(fname, 'rb') as fp:
-        gmyearly_saved = pickle.load(fp)
+    # with open(fname, 'rb') as fp:
+    #     gmyearly_saved = pickle.load(fp)
