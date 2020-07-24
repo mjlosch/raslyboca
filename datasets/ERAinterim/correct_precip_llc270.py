@@ -20,8 +20,6 @@ fname2 = os.path.join(d2,'dangendorf-etal2019_ncc.txt')
 with open(fname, 'rb') as fp:
     gmyearly_saved = pickle.load(fp)
 
-# years = gmyearly_saved[0]
-# gmyearly = np.asarray(gmyearly_saved[1])
 years = gmyearly_saved[0]
 gmyearly = np.asarray(gmyearly_saved[1])
 
