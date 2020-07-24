@@ -5,7 +5,10 @@
  &EXF_NML_01
 #see MITgcm/verification/global_ocean.cs32x15/input.icedyn/data.exf
  exf_albedo        = 0.066,
- ht                = 10.,
+# I have no idea why this parameter was set to 10m, when ERAinterim provides 2m-temperatures
+#ht                = 10.,
+# this is the default
+ ht                = 2.,
  ocean_emissivity  = 0.97,
  atmrho            = 1.22,
  humid_fac         = .608,
