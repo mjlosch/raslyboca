@@ -157,14 +157,14 @@ if len(gm)>0:
     axb.set_title('annual correction (mg m$^{-2}$s$^{-1}$ $\Leftrightarrow$ 10$^{-9}$ m s$^{-1}$))')
     figb.show()
 
-    # fname = 'yearly_correction'
-    # with open(fname+'.txt', 'w') as f:
-    #     for item in gmyearly:
-    #         f.write("%s\n" % item)
+    fname = 'yearly_correction'
+    with open(fname+'.txt', 'w') as f:
+        for item in gmyearly:
+            f.write("%s\n" % item)
 
-    # import pickle
-    # with open(fname, 'wb') as fp:
-    #     pickle.dump([years,gmyearly], fp)
+    import pickle
+    with open(fname, 'wb') as fp:
+        pickle.dump([years,gmyearly], fp)
 
-    # with open(fname, 'rb') as fp:
-    #     gmyearly_saved = pickle.load(fp)
+    with open(fname, 'rb') as fp:
+        gmyearly_saved = pickle.load(fp)
