@@ -133,6 +133,20 @@ ax.plot(ddays,rcf*eta,label='ETAN_ave')
 ax.plot(ddays,rif*hff,label='SIheff_ave')
 ax.plot(ddays,rcf*eta+rif*hff,label='sum')
 
+ename = '/work/ollie/mlosch/raslyboca/datasets/Eta/sea_surface_elevation.nc'
+if os.path.isfile(ename):
+    from netCDF4 import Dataset
+    ds = Dataset(ename,'r')
+    tm = ds['time'][:]
+    etadata= ds['eta'][:]
+    # remove sea level anomaly of 1979-01-01
+    etadatac = etadata-etadata[0]
+    tmd = np.array([datetime.datetime(int(tmi), int((tmi-int(tmi))*12)+1,
+                                      int(((tmi-int(tmi))*12
+                                           -int((tmi-int(tmi))*12))*30))
+                    for tmi in tm])
+    ax.plot(tmd,rcf*etadatac.data,label='CSIRO data')
+
 ax.grid()
 ax.legend()
 fig.show()
