@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import datetime
 from matplotlib.animation import FuncAnimation
 import os
+import calendar as cal
 from mpl_toolkits.basemap import Basemap
 
 year = 2018
 
-fields = ['u10','v10','q','ssrd','strd','t2m']
+fields = ['u10','v10','q','ssrd','strd','t2m','tp']
 
 def readfield(fname,dims):
     import sys
@@ -47,9 +48,29 @@ lon2,lat2=np.meshgrid(lon,lat)
 rac=dx*dy
 
 nt = 365*4
+if cal.isleap(year): nt = 366*4
 if year==2019: nt = 244*4
 u=readfield('u10_ERAi_6hourly_'+str(year),[nt,241,480])
 v=readfield('v10_ERAi_6hourly_'+str(year),[nt,241,480])
+
+ntotvar = []
+for kf, vname in enumerate(fields):
+    var = readfield(vname+'_ERAi_6hourly_'+str(year),[nt,241,480])
+    vmn  = np.abs(var).mean(axis=(1,2))
+    vstd = var.std(axis=(1,2))
+    ntotvar.append(0.)
+    for k in range(len(vmn)):
+        vp = var[k,:,:]-vmn[k]
+        noutlier = (np.abs(vp) > vmn[k]+3*vstd[k]).sum()
+        ntotvar[kf] = noutlier+noutlier
+        print('variabe: '+vname+', record '+str(k)
+              +', number of outliers = '+str(noutlier))
+
+# t2m=readfield('t2m_ERAi_6hourly_'+str(year),[nt,241,480])
+# tp=readfield('tp_ERAi_6hourly_'+str(year),[nt,241,480])
+# q=readfield('q_ERAi_6hourly_'+str(year),[nt,241,480])
+# strd=readfield('strd_ERAi_6hourly_'+str(year),[nt,241,480])
+# ssrd=readfield('strd_ERAi_6hourly_'+str(year),[nt,241,480])
 
 # estimate divergence and vorticity:
 dudi = (u-np.roll(u,-1,axis=-1))/dx
@@ -114,7 +135,7 @@ def animate(t):
     th0.set_text('wind divergence at '+mydate.strftime("%b %d %Y %H:%M:%S"))
     th1.set_text('wind vorticity at '+mydate.strftime("%b %d %Y %H:%M:%S"))
 
-anim = FuncAnimation(f1, animate, interval=10, frames=range(250*4,290*4))
+#anim = FuncAnimation(f1, animate, interval=10, frames=range(div.shape[0]))#250*4,290*4))
 
 plt.show()
 
