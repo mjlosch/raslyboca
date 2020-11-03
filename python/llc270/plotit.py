@@ -19,8 +19,22 @@ bdir = '/work/ollie/mlosch/raslyboca/llc270'
 #            314112, 315600, 316944, 318432, 319872, 321360]
 # myiter = myiter2[-1]
 
-myiter = np.Inf; myiter2 = myiter
-#myiter = 16032; myiter2 = myiter
+# myiter = np.Inf; myiter2 = myiter
+# # 1984-12-31
+# myiter = 103728; myiter2 = myiter
+# # 1989-12-13
+# myiter = 191376; myiter2 = myiter
+# # 1994-05-31
+# myiter = 268752; myiter2 = myiter
+# # 1997-05-31
+# myiter = 191376; myiter2 = myiter
+# # 1997-05-31
+# myiter = 321360; myiter2 = myiter
+# 1998-05-31
+myiter = 338880; myiter2 = myiter
+# # 1998-12-31
+# myiter = 349152; myiter2 = myiter
+
 zdir = os.path.join(bdir,'runz00')
 rdir = os.path.join(bdir,'runp00')
 gdir = '/home/ollie/mlosch/MITgcm/MITgcm/llc270/grid'
@@ -39,6 +53,8 @@ hfz= rdmds(os.path.join(rdir,'hFacC'))
 dpz= rdmds(os.path.join(zdir,'Depth'))
 dpp= rdmds(os.path.join(rdir,'Depth'))
 
+zdiry = os.path.join(zdir,'20years')
+rdiry = os.path.join(rdir,'20years')
 
 rhoConst=1035.
 gravity = 9.81
@@ -58,17 +74,17 @@ mskp[mskp>0]=1.
 
 lmsk = mskp[-1,:,:]
 
-#dp = rdmds(os.path.join(rdir,'diag2D'),myiter)
-#dz = rdmds(os.path.join(zdir,'diag2D'),myiter)
+#dp = rdmds(os.path.join(rdiry,'diag2D'),myiter)
+#dz = rdmds(os.path.join(zdiry,'diag2D'),myiter)
 
-sip,myiter,msidata=rdmds(os.path.join(rdir,'SIdiags'),myiter,returnmeta=True)
-d2p,myiter2,m2data=rdmds(os.path.join(rdir,'diags2D'),myiter2,returnmeta=True)
-d3p,myiter,m3data=rdmds(os.path.join(rdir,'diags3D'),myiter,returnmeta=True)
+sip,myiter,msidata=rdmds(os.path.join(rdiry,'SIdiags'),myiter,returnmeta=True)
+d2p,myiter2,m2data=rdmds(os.path.join(rdiry,'diags2D'),myiter2,returnmeta=True)
+d3p,myiter,m3data=rdmds(os.path.join(rdiry,'diags3D'),myiter,returnmeta=True)
 
 
-siz=rdmds(os.path.join(zdir,'SIdiags'),myiter)
-d2z=rdmds(os.path.join(zdir,'diags2D'),myiter2)
-d3z=rdmds(os.path.join(zdir,'diags3D'),myiter)
+siz=rdmds(os.path.join(zdiry,'SIdiags'),myiter)
+d2z=rdmds(os.path.join(zdiry,'diags2D'),myiter2)
+d3z=rdmds(os.path.join(zdiry,'diags3D'),myiter)
 
 if len(myiter2)>1:
     d2p=d2p.mean(axis=0)
@@ -241,18 +257,18 @@ fcmp,ax=plt.subplots(2,2,sharex=True,sharey=True,squeeze=True,figsize=(8,6))
 csf = np.copy(ax)
 # mean sea level
 plt.sca(ax[0,0])
-csf[0,0]=llc.pcol(xg,yg,etap-etaz)
+csf[0,0]=llc.pcol(xg,yg,etap-etaz,cmap=cm.delta)
 # mixed layer depth
 ivar = 4 # MXLDEPTH
 dmld = sq(d2p[ivar,:,:])/grho-sq(d2z[ivar,:,:])
 plt.sca(ax[0,1])
-csf[0,1]=llc.pcol(xg,yg,dmld)
+csf[0,1]=llc.pcol(xg,yg,dmld,cmap=cm.delta)
 # sea level anomaly
 plt.sca(ax[1,0])
-csf[1,0]=llc.pcol(xg,yg,sl2p-sl2z)
+csf[1,0]=llc.pcol(xg,yg,sl2p-sl2z,cmap=cm.delta)
 # bottom pressure anomaly
 plt.sca(ax[1,1])
-csf[1,1]=llc.pcol(xg,yg,(bp2p-bp2z)/grho)
+csf[1,1]=llc.pcol(xg,yg,(bp2p-bp2z)/grho,cmap=cm.delta)
 
 varname = ['mean sea level (m)','mixed layer depth (m)'
            ,'sea level variability (m)','bottom pressure variability (m)']
