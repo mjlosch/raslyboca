@@ -43,4 +43,4 @@ masku=llc.faces2mds(maskuf)
 maskv=llc.faces2mds(maskvf)
 
 wrmds('maskU_arctic_sections',masku)
-wrmds('maskV_arctic_sections',masku)
+wrmds('maskV_arctic_sections',maskv)
