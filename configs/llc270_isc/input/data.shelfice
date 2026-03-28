@@ -1,0 +1,15 @@
+# *******************************
+# Parameter for SHELFICE package
+# ******************************
+ &SHELFICE_PARM01
+ SHELFICEboundaryLayer = .FALSE.,
+ SHELFICEtopoFile   = 'icedraft.bin',
+# SHELFICEmassFile = 'icemass.bin',
+ SHELFICEloadAnomalyFile = 'iceload_updated.bin'
+ SHELFICEconserve = .TRUE.,
+ SHELFICEwriteState = .TRUE.,
+ SHELFICEuseGammaFrict = .TRUE.,
+# SHELFICEselectDragQuadr = 1,
+ shiCDrag=1.5e-3,
+/
+ &

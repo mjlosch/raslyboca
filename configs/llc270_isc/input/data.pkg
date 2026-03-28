@@ -1,0 +1,12 @@
+# Packages
+ &PACKAGES
+ useGMRedi =.TRUE.,
+ useGGL90 =.TRUE.,
+ useSEAICE=.true.,
+ useCAL = .TRUE.,
+ useEXF = .true.,
+ useDiagnostics = .true.,
+ useLayers = .FALSE.,
+ useSHELFICE = .true.,
+ useFRAZIL=.FALSE.,
+&

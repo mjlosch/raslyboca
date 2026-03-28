@@ -1,0 +1,90 @@
+# Diagnostic Package Choices
+#-----------------
+# for each output-stream:
+#  filename(n) : prefix of the output file name (only 8.c long) for outp.stream n
+#  frequency(n):< 0 : write snap-shot output every |frequency| seconds
+#               > 0 : write time-average output every frequency seconds
+#  timePhase(n)     : write at time = timePhase + multiple of |frequency|
+#  levels(:,n) : list of levels to write to file (Notes: declared as REAL)
+#                 when this entry is missing, select all common levels of this list
+#  fields(:,n) : list of diagnostics fields (8.c) (see "available_diagnostics" file
+#                 for the list of all available diag. in this particular config)
+#-----------------
+ &diagnostics_list
+  diag_mnc = .false.,
+#
+#  frequency(1) = -1800.,
+ frequency(1) = 31536000.,
+# frequency(1) = 86400.,
+  filename(1) = 'diags3D',
+  fields(1,1) = 'THETA   ','SALT    ',
+                'UVELMASS','VVELMASS','WVELMASS',
+                'GGL90TKE','GGL90Kr ','IDEMIX_E',
+		'PHIHYD  ',
+  frequency(2) = 31536000.,
+# frequency(2) = 2628000.,
+# frequency(2) = 86400.,
+  filename(2) = 'diags2D',
+# enforce double prec output
+#  fileFlags(2) = 'D       ',
+  fields(1,2) = 'ETAN    ','SRELAX',
+                'MXLDEPTH','oceFWflx','oceSflux',
+                'TRELAX','surForcS','SFLUX',
+                'EXFempmr', 'EXFroff','EXFsalfx',  
+# frequency(3) = 31536000.,
+  frequency(3) = 31536000.,
+# frequency(3) = 86400.,
+  filename(3) = 'SIdiags',
+  fields(1,3) = 'SIarea  ','SIheff  ','SIhsnow ',
+                'SIuice  ','SIvice  ','SIempmr',
+                'SHIfwFlx', 'SHIhtFlx','SHIForcS',
+		'SHIgammT', 'SHIgammS',
+#  filename(4) = 'diagsLAYERS',
+#  fields(1,4) = 'LaUH1RHO','LaVH1RHO','LaHw1RHO','LaHs1RHO',
+# frequency(4) = 31536000.,
+# 2008-01-01
+# timePhase(4)= 1577836800.,
+#  filename(5) = 'diags3Dmonthly',
+#  fields(1,5) = 'UVELMASS','VVELMASS',
+#                'UTHMASS ','VTHMASS '
+# frequency(5) = 2628000.,
+# 2008-01-01
+# timePhase(5)= 1577836800.,
+ &
+#
+
+# Parameter for Diagnostics of per level statistics:
+#-----------------
+# for each output-stream:
+#  stat_fname(n) : prefix of the output file name (only 8.c long) for outp.stream n
+#  stat_freq(n):< 0 : write snap-shot output every |stat_freq| seconds
+#               > 0 : write time-average output every stat_freq seconds
+#  stat_phase(n)    : write at time = stat_phase + multiple of |stat_freq|
+#  stat_region(:,n) : list of "regions" (default: 1 region only=global)
+#  stat_fields(:,n) : list of diagnostics fields (8.c) (see "available_diagnostics.log"
+#                 file for the list of all available diag. in this particular config)
+#-----------------
+ &DIAG_STATIS_PARMS
+#- an example just to check the agreement with MONITOR output:
+#ns_mask.bin
+#
+#stat_fields(1,1)= 'ETAN    ','UVEL    ','VVEL    ','WVEL    ', 'THETA   ',
+ diagSt_mnc = .TRUE.,
+ diagSt_regMaskFile='ns_mask.bin',
+ nSetRegMskFile = 1,
+ set_regMask(1:2) = 1,  1
+ val_regMask(1:2) = 1., 2.,
+#
+ stat_fields(1,1)= 'ETAN    ','SIheff  ','oceQnet ','oceFWflx',
+                   'PHIBOT  ','THETA   ','SALT    ','RHOAnoma',
+ stat_fname(1)= 'dynStDiag',
+ stat_freq(1)= 86400.,
+ stat_phase(1)= 0.,
+ stat_region(1:3,1)  = 1, 2, 0,
+#
+ stat_fields(1,2)= 'SIheff  ','SIhsnow ',
+ stat_fname(2)= 'seaiceStDiag',
+ stat_freq(2)= -86400.,
+ stat_phase(2)= 0.,
+ stat_region(1:3,2)  = 1, 2, 0,
+ &

@@ -1,0 +1,183 @@
+#!/bin/bash
+#SBATCH --account=clidyn.clidyn
+#SBATCH -J llc_270_ref
+#SBATCH -p mpp
+#SBATCH -n 799
+#SBATCH --qos=12h
+#SBATCH -t 12:00:00
+##SBATCH --qos=30min
+##SBATCH -t 00:30:00
+##SBATCH --tasks-per-node=64
+#SBATCH --cpus-per-task=2
+#SBATCH -o ./output.txt
+##SBATCH --mail-user=martin.losch@awi.de
+
+echo "SLURM_CPUS_PER_TASK: $SLURM_CPUS_PER_TASK"
+export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
+
+module purge
+module load intel-oneapi-compilers
+# module load intel-oneapi-mkl
+module load intel-oneapi-mpi
+module load netcdf-fortran/4.5.4-oneapi2022.1.0
+module list
+
+# list of hosts that you are running on
+hostlist=$(scontrol show hostnames | tr '\n' ',' | rev | cut -c 2- | rev)
+echo "hosts: $hostlist"
+umask 022
+ulimit -s
+# maximum possible stacksize
+#ulimit -s 1048576
+#ulimit -s 1500000
+ulimit -s unlimited
+echo "ulimit -s"
+ulimit -s
+# even though we do not run an OpenMP code it is still a good idea to
+# always set this
+export OMP_NUM_THREADS=1
+#export OMP_PROC_BIND=close
+# very important if you want to run on more than one node!!!
+#export I_MPI_FABRICS=shm:tmi
+cd ${SLURM_SUBMIT_DIR}
+echo ${SLURM_NTASKS}
+
+ntx=1
+nty=1
+cat > eedata<<EOF
+ &EEPARMS
+ nTx=${ntx},
+ nTy=${nty},
+ useCubedSphereExchange = .TRUE.,
+ printMapIncludesZeros = .TRUE.
+ &
+EOF
+
+# show number of tasks, cpus,...
+echo "SLURM_NTASKS        : $SLURM_NTASKS"
+echo "SLURM_TASKS_PER_NODE: $SLURM_TASKS_PER_NODE"
+echo "SLURM_CPUS_PER_TASK : $SLURM_CPUS_PER_TASK"
+echo "OMP_NUM_THREADS     : $OMP_NUM_THREADS"
+echo "OMP_PROC_BIND       : $OMP_PROC_BIND"
+
+#bdir=${HOME}/MITgcm/MITgcm/llc270
+#ln -s ../pickups/* .
+ln -s ../input/* . > /dev/null 2>&1
+#ln -s ${bdir}/input/* . > /dev/null 2>&1
+exe=mitgcmuv
+#exe=${bdir}/build_mpi/mitgcmuv
+
+olditer0=`grep nIter0 data | awk -F= '{print $NF}' | awk -F, '{print $1}'`
+newiter0=$olditer0
+startlayers=8400000000
+#startlayers=2000000
+if [[ $olditer0 -ge $startlayers ]]; then
+    # start layers computations
+    dolayers='.TRUE.'
+    # comment in two lines in data.diagnostics (find the output stream
+    # and remove the "#" at the beginning)
+    sed -i '/diagsLAYERS/s/^#/ /g' data.diagnostics
+    sed -i '/diags3Dmonthly/s/^#/ /g' data.diagnostics
+else
+    dolayers='.FALSE.'
+    # comment out two lines in data.diagnostics (find the output stream
+    # and replace first character by "#")
+#    sed -i '/diagsLAYERS/s/^./#/g' data.diagnostics
+#    sed -i '/diags3Dmonthly/s/^./#/g' data.diagnostics
+fi
+
+cat > data.pkg<<EOF
+# Packages
+ &PACKAGES
+ useGMRedi =.TRUE.,
+ useGGL90 =.TRUE.,
+ useSEAICE=.true.,
+ useCAL = .TRUE.,
+ useEXF = .true.,
+ useDiagnostics = .true.,
+ useLayers = $dolayers,
+ useSHELFICE = .true.,
+ useFRAZIL=.FALSE.,
+&
+EOF
+
+echo "run the model starting at iter=$olditer0 with"
+#echo "srun --cpu_bind=cores $exe"
+#srun --cpu_bind=cores --distribution=block:block $exe
+sruncmd="srun srun --cpu-bind=core --distribution=block:cyclic:cyclic --mem-bind=local $exe"
+echo "$sruncmd"
+$sruncmd
+
+echo "looking for pickups"
+
+# with hydrostatic pressure
+filesize=3434464800
+# without hydostatic pressure (selectP_inEOS_Zc = 0)
+filesize=3055384800
+last_pickup=`ls -lt pickup.*.data | awk '$5~/'${filesize}'/{print $NF}'|head -1 `
+if [ -n "${last_pickup}" ]; then
+    echo "linking last_pickup ${last_pickup}"
+    last_meta=`echo $last_pickup | sed 's/data/meta/'`
+    timestep=`awk '$1~/timeStepNumber/{printf("%010d",$4)}' $last_meta`
+    \ln -sf ${last_pickup} pickup.${timestep}
+    last_pickupmeta=`echo $last_pickup|awk '{split($0,a,".");print a[1]"."a[2]".meta"}'`
+    \ln -sf ${last_pickupmeta} pickup.${timestep}.meta
+fi
+
+filesize=90979200
+last_pickup_seaice=`ls -lt pickup_seaice.*.data | awk '$5~/'${filesize}'/{print $NF}'|head -1 `
+if [ -n "${last_pickup_seaice}" ]; then
+    echo "linking last_pickup_seaice ${last_pickup_seaice}"
+    last_meta=`echo $last_pickup_seaice | sed 's/data/meta/'`
+    timestep=`awk '$1~/timeStepNumber/{printf("%010d",$4)}' $last_meta`
+    \ln -sf ${last_pickup_seaice} pickup_seaice.${timestep}
+    last_pickupmeta=`echo $last_pickup_seaice|awk '{split($0,a,".");print a[1]"."a[2]".meta"}'`
+    \ln -sf ${last_pickupmeta} pickup_seaice.${timestep}.meta
+fi
+
+filesize=758160000
+last_pickup_ggl90=`ls -lt pickup_ggl90.*.data | awk '$5~/'${filesize}'/{print $NF}'|head -1 `
+if [ -n "${last_pickup_ggl90}" ]; then
+    echo "linking last_pickup_ggl90 ${last_pickup_ggl90}"
+    last_meta=`echo $last_pickup_ggl90 | sed 's/data/meta/'`
+    timestep=`awk '$1~/timeStepNumber/{printf("%010d",$4)}' $last_meta`
+    \ln -sf ${last_pickup_ggl90} pickup_ggl90.${timestep}
+    last_pickupmeta=`echo $last_pickup_ggl90|awk '{split($0,a,".");print a[1]"."a[2]".meta"}'`
+    \ln -sf ${last_pickupmeta} pickup_ggl90.${timestep}.meta
+fi
+
+# save old data and STDOUT
+\cp data data.${olditer0}
+\cp STDOUT.0000 stdout.${olditer0}
+
+if [[ "x$timestep" == "x" ]]; then
+    echo "did not find appropriate pickup files"
+    exitcode=1
+else
+    # adjust the startpoint in data
+    newiter0=`expr $timestep \* 1`
+    echo "new niter0 = "$newiter0
+fi
+
+lastline=`tail -1 STDOUT.0000`
+testline=`echo $lastline  | grep 'Execution ended Normally'`
+
+if test "x$testline" = "x" ; then
+    echo "something is wrong; exiting"
+    exitcode=1
+else
+#    if [[ $newiter0 < 1089216 ]]; then
+	cat data.${olditer0} | sed "/ nIter0/s/.*/ nIter0=${newiter0},/" >| data
+	\rm STD*
+	echo "starting next job"
+	exitcode=0
+
+	echo "sbatch job.mpi"
+ 	sbatch job.mpi
+#\rm -rf w2_*.log
+#    else
+#	echo "simulation reached the end, cleaning up"
+#	find . -type l -exec rm {} \;
+#	\rm -rf *.log
+#    fi
+fi
